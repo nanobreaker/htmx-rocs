@@ -22,9 +22,6 @@ page! = |_req|
                 pre [] [
                     code [] [
                         text (logo {}),
-                        # span [class "line"] [
-                        # text (logo {}),
-                        # ],
                     ],
                 ],
                 b [] [text "Todo Application"],
