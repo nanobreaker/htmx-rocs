@@ -1,6 +1,7 @@
 app [Model, init!, respond!] {
     ws: platform "https://github.com/roc-lang/basic-webserver/releases/download/0.12.0/Q4h_In-sz1BqAvlpmCsBHhEJnn_YvfRRMiNACB_fBbk.tar.br",
     hasnep: "https://github.com/Hasnep/roc-html/releases/download/v0.7.0/3uTKBUdKr7d017eneDe4CLgMB1FHlYSWe7vkC20a5fI.tar.br",
+    time: "https://github.com/imclerran/roc-isodate/releases/download/v0.7.4/bEDedspHQApTvZI2GJfgXpzUmYO_ATw5d6xE_w1qcME.tar.br",
 }
 
 import ws.Stdout
@@ -15,6 +16,7 @@ import "../web/styles/main.css" as main_css_file : List U8
 
 import Views.Login
 import Views.Dashboard
+import Controllers.Todos
 
 Model : {}
 
@@ -34,12 +36,15 @@ respond! = |req, _|
         |> List.drop_first 1
 
     when (req.method, url_segments) is
+        # static resources
         (GET, ["main.js"]) -> main_js_file |> respond_static
         (GET, ["main.css"]) -> main_css_file |> respond_static
+        # entry routes
         (GET, [""]) -> Views.Login.page! req |> respond_html
         (GET, ["login"]) -> Views.Login.page! req |> respond_html
         (GET, ["dashboard"]) -> Views.Dashboard.page! req |> respond_html
-        (GET, ["todo"]) -> todo! req
+        # todo routes
+        (_, ["todo"]) -> Controllers.Todos.handle! req
         _ -> not_found! req
 
 respond_html : Html.Node -> Result Response [ServerErr Str]_
@@ -60,20 +65,6 @@ respond_static = |bytes|
             { name: "Cache-Control", value: "max-age=120" },
         ],
         body: bytes,
-    }
-
-todo! : Request => Result Response [Server Str]_
-todo! = |_req|
-    page = Html.html [] [
-        body [] [h1 [] [text "Todo"]],
-    ]
-
-    html = Html.render(page)
-
-    Ok {
-        status: 200,
-        headers: [],
-        body: Str.to_utf8 html,
     }
 
 not_found! : Request => Result Response [ServerErr Str]_

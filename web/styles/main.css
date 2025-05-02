@@ -3,7 +3,8 @@
   --font-family: "JetBrainsMono NFM", monospace;
 }
 
-html, body {
+html,
+body {
   height: 100%
 }
 
@@ -11,10 +12,73 @@ html, body {
   width: 100%;
   height: 100%;
   display: table;
-  text-align:center;
+  text-align: center;
 }
 
-.login-form {
+.entry {
   display: table-cell;
-  padding-top: 20ch;
+  padding-top: 10ch;
+
+  .logo {}
+
+  .title {
+    font-size: 32px;
+    font-family: 'Heavy Data';
+  }
+
+  .haiku {}
+
+  .buttons {
+    padding-top: 3ch;
+  }
+
+}
+
+.screen {
+  width: 100%;
+  height: 100%;
+
+  display: grid;
+  grid-template-rows: 3ch 1fr 3ch;
+
+  .topbar {}
+
+  .buffer {}
+
+  .bottombar {
+    display: grid;
+    grid-template-rows: auto 3ch 3ch;
+
+    .feedback {
+      display: contents;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 10;
+    }
+
+    .status-line {}
+
+    .command-line {
+      display: grid;
+      grid-template-columns: auto 1fr;
+
+      .label {
+        padding-block: unset;
+        padding-left: 1ch;
+        line-height: 3ch;
+      }
+
+      .input {
+        height: 3ch;
+        line-height: 3ch;
+        border: unset;
+        outline: none;
+        caret-shape: block;
+        background: none;
+      }
+    }
+  }
+
 }
