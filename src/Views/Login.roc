@@ -21,11 +21,7 @@ page! = |_req|
         body [] [
             main [class "content"] [
                 div [class "entry"] [
-                    pre [class "logo"] [
-                        code [] [
-                            text (logo {}),
-                        ],
-                    ],
+                    pre [class "logo"] [code [] [text logo]],
                     p [class "title"] [text "THE TODO APP"],
                     p [class "haiku"] [
                         text "In swift code it flows",
@@ -44,7 +40,7 @@ page! = |_req|
                                 (attribute "hx-trigger") "keyup[key=='a'] from:body",
                             ]
                             [
-                                text "Authenticate [a]",
+                                text "authenticate [a]",
                             ],
                         a
                             [
@@ -55,7 +51,7 @@ page! = |_req|
                                 (attribute "hx-trigger") "keyup[key=='r'] from:body",
                             ]
                             [
-                                text "Register [r]",
+                                text "register [r]",
                             ],
                     ],
                 ],
@@ -63,8 +59,7 @@ page! = |_req|
         ],
     ]
 
-logo : {} -> Str
-logo = |{}|
+logo =
     """
     .............                                               
     ...========..............                                 

@@ -30,6 +30,12 @@ body {
 
   .buttons {
     padding-top: 3ch;
+
+    a {
+      text-decoration: none;
+      padding-left: 2ch;
+      padding-right: 2ch;
+    }
   }
 
 }
