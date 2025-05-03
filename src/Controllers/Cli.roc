@@ -19,8 +19,8 @@ handle! = |req|
 
     when (req.method, url_segments) is
         (POST, ["cli"]) ->
-            form = MultipartFormData.parse_form_url_encoded(req.body) |> Result.map_err(|_| IOFailed)?
-            text = Dict.get form "command" |> Result.map_err(|_| KeyNotFound)?
+            form = MultipartFormData.parse_form_url_encoded(req.body) ? |_| IOFailed
+            text = Dict.get form "command" ? |_| KeyNotFound
 
             when Services.Parser.parse text is
                 Ok value ->
