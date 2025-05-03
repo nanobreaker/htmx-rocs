@@ -21,7 +21,7 @@ page! = |_req|
             main [class "screen"] [
                 div [class "topbar"] [
                 ],
-                div [id "content", class "buffer"] [
+                div [id "buffer", class "buffer"] [
                 ],
                 div [class "bottombar"] [
                     div [class "feedback"] [
@@ -32,13 +32,13 @@ page! = |_req|
                         [
                             class "command-line",
                             (attribute "hx-post") "/cli",
-                            (attribute "hx-target") "content",
+                            (attribute "hx-target") "#buffer",
                             (attribute "hx-swap") "innerHTML",
                         ]
                         [
                             label [class "label"] [text ":"],
                             input [class "input", type "search", name "command"],
-                            input [type "submit", hidden "hidden", (attribute "hx-trigger") "key[Enter]"],
+                            input [type "submit", hidden "hidden", (attribute "hx-trigger") "key[Enter] from:body"],
                         ],
                 ],
             ],

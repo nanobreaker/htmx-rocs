@@ -17,6 +17,7 @@ import "../web/styles/main.css" as main_css_file : List U8
 import Views.Login
 import Views.Dashboard
 import Controllers.Todos
+import Controllers.Cli
 
 Model : {}
 
@@ -45,6 +46,8 @@ respond! = |req, _|
         (GET, ["dashboard"]) -> Views.Dashboard.page! req |> respond_html
         # todo routes
         (_, ["todo"]) -> Controllers.Todos.handle! req
+        # cli routes
+        (_, ["cli"]) -> Controllers.Cli.handle! req
         _ -> not_found! req
 
 respond_html : Html.Node -> Result Response [ServerErr Str]_
