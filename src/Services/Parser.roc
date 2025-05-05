@@ -6,27 +6,25 @@ ParserErr : [EmptyInput, UnknownProgram, UnknownCommand, IncompleteCommand]
 
 parse : Str -> Result _ ParserErr
 parse = |text|
-    tokens = tokenize(text)?
-
-    when tokens is
-        [] -> Err UnknownProgram
-        [Todo, Create] -> Err IncompleteCommand
-        [Todo, Create, Argument arg] ->
+    when tokenize text is
+        [] -> Err EmptyInput
+        [Keyword Todo, Keyword Create] -> Err IncompleteCommand
+        [Keyword Todo, Keyword Create, Text arg] ->
             Ok TodoCreate({ title: arg, description: None, start: None, end: None })
 
-        [Todo, Create, Argument arg, Description description] ->
+        [Keyword Todo, Keyword Create, Text arg, Option Description, Text description] ->
             Ok TodoCreate({ title: arg, description: Some description, start: None, end: None })
 
-        [Todo, Create, Argument arg, Description description, Start start, End end] ->
+        [Keyword Todo, Keyword Create, Text arg, Option Description, Text description, Option Start, Text start, Option End, Text end] ->
             Ok TodoCreate({ title: arg, description: Some description, start: Some start, end: Some end })
 
-        [Todo, Get, Argument arg] ->
+        [Keyword Todo, Keyword Get, Text arg] ->
             Ok TodoGet({ title: arg })
 
-        [Todo, Update, Title title, Description description, Start start, End end] ->
+        [Keyword Todo, Keyword Update, Text arg, Option Title, Text title, Option Description, Text description, Option Start, Text start, Option End, Text end] ->
             Ok TodoUpdate({ title: Some title, description: Some description, start: Some start, end: Some end })
 
-        [Todo, Delete, Argument arg] ->
+        [Keyword Todo, Keyword Delete, Text arg] ->
             Ok TodoDelete({ title: arg })
 
         [_] -> Err UnknownProgram
