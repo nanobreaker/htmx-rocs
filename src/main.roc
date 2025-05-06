@@ -47,7 +47,7 @@ respond! = |req, _|
         # todo routes
         (_, ["todo"]) -> Controllers.Todos.handle! req
         # cli routes
-        (_, ["cli"]) -> Controllers.Cli.handle! req
+        (_, ["cli"]) -> Controllers.Cli.handle! req |> Result.map_err |_| ServerErr "todo"
         _ -> not_found! req
 
 respond_html : Html.Node -> Result Response [ServerErr Str]_

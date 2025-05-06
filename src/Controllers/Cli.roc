@@ -5,11 +5,13 @@ import ws.Url
 import ws.MultipartFormData
 import ws.Stdout
 
+import Views.Todo exposing [page]
+import Models.Todo exposing [Todo]
 import Services.Parser exposing [parse, Command, ParserErr]
+import Repositories.TodoRepository exposing [save!, find!]
+import hasnep.Html
 
-CliError : [UnknownCommand, NotSupportedOperation, KeyNotFound, IOFailed]
-
-handle! : Request => Result Response CliError
+handle! : Request => Result Response _
 handle! = |req|
     url_segments =
         req.uri
@@ -20,34 +22,35 @@ handle! = |req|
 
     when (req.method, url_segments) is
         (POST, ["cli"]) ->
-            form = MultipartFormData.parse_form_url_encoded(req.body) ? |_| IOFailed
-            text = Dict.get form "command" ? |_| KeyNotFound
+            MultipartFormData.parse_form_url_encoded(req.body)
+            |> Result.try |form| Dict.get form "command"
+            |> Result.try |txt| parse txt
+            |> Result.try |cmd| handle_command cmd
 
-            when parse text is
-                Ok command ->
-                    when handle_command! command is
-                        Ok response -> Ok response
-                        Err _ -> Err UnknownCommand
+        (_, _) ->
+            Ok {
+                status: 400,
+                headers: [],
+                body: Str.to_utf8 "not supported",
+            }
 
-                Err _ -> Err UnknownCommand
-
-        (_, _) -> Err NotSupportedOperation
-
-handle_command! : Command => Result Response _
-handle_command! = |command|
+handle_command : Command -> Result Response _
+handle_command = |command|
     when command is
-        TodoCreate({ title, description, start, end }) ->
-            Stdout.line!("${title}")?
-            when description is
-                Some text -> Stdout.line!("${text}")?
-                None -> Stdout.line!("no description")?
-            when start is
-                Some text -> Stdout.line!("${text}")?
-                None -> Stdout.line!("no start")?
-            when end is
-                Some text -> Stdout.line!("${text}")?
-                None -> Stdout.line!("no end")?
+        TodoCreate(todo) ->
+            save! todo "test.db" "1"
+            |> Result.map_ok |t| page t
+            |> Result.map_ok |html| Html.render html
+            |> Result.map_ok |text| Str.to_utf8 text
+            |> Result.map_ok |utf8| {
+                status: 200,
+                headers: [],
+                body: utf8,
+            }
 
-            Ok { status: 200, headers: [], body: Str.to_utf8 "ok" }
-
-        _ -> Ok { status: 200, headers: [], body: Str.to_utf8 "ok" }
+        _ ->
+            Ok {
+                status: 400,
+                headers: [],
+                body: Str.to_utf8 "not supported",
+            }
