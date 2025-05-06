@@ -1,5 +1,6 @@
 module [tokenize, Token]
 
+## Type alias to represent Token
 Token : [
     Text Str,
     Keyword [Help, Todo, Create, Get, Update, Delete, Unknown Str],
@@ -7,73 +8,62 @@ Token : [
     Unknown Str,
 ]
 
+## Type alias to represent state of the state machine
+State : {
+    state : [New, Keyword, Option, Text],
+    tokens : List Token,
+    acc : List U8,
+}
+
+## Tokenizes given input and produces list of tokens
+## Returns empty list if no tokens found or input is empty
 tokenize : Str -> List Token
 tokenize = |text|
-    Str.to_utf8 text
-    |> List.append '|'
-    |> List.walk { state: BeginToken, tokens: [], buffer: [] } |state, elem|
-        when state.state is
-            BeginToken ->
-                when to_code elem is
-                    LetterOrDigit -> { state & state: Keyword, buffer: [elem] }
-                    Whitespace -> { state & state: BeginToken, buffer: [] }
-                    QuotationMark -> { state & state: Text, buffer: [] }
-                    Dash -> { state & state: Option, buffer: [] }
-                    Unknown -> { state & state: BeginToken, buffer: [] }
+    List.walk (Str.to_utf8 text) { state: New, tokens: [], acc: [] } update
+    |> finalize
 
-            Keyword ->
-                when to_code elem is
-                    LetterOrDigit ->
-                        { state &
-                            state: Keyword,
-                            buffer: List.append(state.buffer, elem),
-                        }
+## Finalize pending tokens and return list of tokens
+finalize : State -> List Token
+finalize = |state|
+    when state.state is
+        New -> state.tokens
+        Keyword -> List.append state.tokens (Keyword (to_keyword state.acc))
+        Option -> List.append state.tokens (Option (to_option state.acc))
+        Text -> state.tokens
 
-                    _ ->
-                        {
-                            state: BeginToken,
-                            tokens: List.append(state.tokens, Keyword (to_keyword state.buffer)),
-                            buffer: [],
-                        }
+# Inner function to update state of state maching while walking the list
+update : State, U8 -> State
+update = |state, char|
+    when state.state is
+        New ->
+            when to_code char is
+                Alphanumeric -> { state & state: Keyword, acc: [char] }
+                Whitespace -> { state & state: New, acc: [] }
+                QuotationMark -> { state & state: Text, acc: [] }
+                Dash -> { state & state: Option, acc: [] }
+                Unknown -> { state & state: New, acc: [] }
 
-            Option ->
-                when to_code elem is
-                    Whitespace -> state
-                    QuotationMark ->
-                        {
-                            state: Text,
-                            tokens: List.append(state.tokens, Option (to_option state.buffer)),
-                            buffer: [],
-                        }
+        Keyword ->
+            when to_code char is
+                Alphanumeric -> { state & state: Keyword, acc: List.append(state.acc, char) }
+                _ -> { state: New, tokens: List.append(state.tokens, Keyword (to_keyword state.acc)), acc: [] }
 
-                    _ ->
-                        {
-                            state: Option,
-                            tokens: state.tokens,
-                            buffer: List.append(state.buffer, elem),
-                        }
+        Option ->
+            when to_code char is
+                Whitespace -> state
+                QuotationMark -> { state: Text, tokens: List.append(state.tokens, Option (to_option state.acc)), acc: [] }
+                _ -> { state: Option, tokens: state.tokens, acc: List.append(state.acc, char) }
 
-            Text ->
-                when to_code elem is
-                    QuotationMark ->
-                        {
-                            state: BeginToken,
-                            tokens: List.append(state.tokens, Text (Str.from_utf8_lossy state.buffer)),
-                            buffer: [],
-                        }
+        Text ->
+            when to_code char is
+                QuotationMark -> { state: New, tokens: List.append(state.tokens, Text (Str.from_utf8_lossy state.acc)), acc: [] }
+                _ -> { state: Text, tokens: state.tokens, acc: List.append(state.acc, char) }
 
-                    _ ->
-                        {
-                            state: Text,
-                            tokens: state.tokens,
-                            buffer: List.append(state.buffer, elem),
-                        }
-    |> .tokens
-
-to_code : U8 -> [LetterOrDigit, Whitespace, QuotationMark, Dash, Unknown]
+# Helper function to determine code based on char
+to_code : U8 -> [Alphanumeric, Whitespace, QuotationMark, Dash, Unknown]
 to_code = |char|
     if char > 64 and char < 122 then
-        LetterOrDigit
+        Alphanumeric
     else if char == ' ' then
         Whitespace
     else if char == '"' then
@@ -83,6 +73,7 @@ to_code = |char|
     else
         Unknown
 
+# Helper function to determine keyword based on accumulated chars
 to_keyword : List U8 -> [Help, Todo, Create, Get, Update, Delete, Unknown Str]
 to_keyword = |chars|
     when Str.from_utf8_lossy chars is
@@ -94,6 +85,7 @@ to_keyword = |chars|
         "delete" -> Delete
         _ -> Unknown (Str.from_utf8_lossy chars)
 
+# Helper function to determine option based on accumulated chars
 to_option : List U8 -> [Title, Description, Start, End, Unknown Str]
 to_option = |chars|
     when chars is

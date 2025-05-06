@@ -27,7 +27,7 @@ init! = |_|
 
 respond! : Request, Model => Result Response [ServerErr Str]_
 respond! = |req, _|
-    try log_request! req
+    log_request! req ? |_| ServerErr "log failed"
 
     url_segments =
         req.uri
