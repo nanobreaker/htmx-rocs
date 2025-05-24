@@ -1,26 +1,17 @@
 module [handle!]
 
-import ws.Stdout
-import ws.Http exposing [Request, Response]
-import ws.Utc
-import ws.Url
-import ws.MultipartFormData
-import time.DateTime as DT
+import platform.Http exposing [Request, Response]
+import platform.Url
+import platform.MultipartFormData
+
 import Models.Todo exposing [Todo]
-import Repositories.TodoRepository exposing [save!, find!]
+import Repositories.Todo exposing [save!, find!]
 
 TodoErr : [EmptyTitle, NotSupportedOperation, PersistFailed]
 
-handle! : Request => Result Response _
-handle! = |req|
-    url_segments =
-        req.uri
-        |> Url.from_str
-        |> Url.path
-        |> Str.split_on "/"
-        |> List.drop_first 1
-
-    when (req.method, url_segments) is
+handle! : Request, List Str => Result Response [ServerErr Str]_
+handle! = |req, url|
+    when (req.method, url) is
         (POST, ["todo"]) ->
             MultipartFormData.parse_form_url_encoded req.body
             ? |_| PersistFailed

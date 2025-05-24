@@ -1,11 +1,11 @@
-module [page!]
+module [dashboard!]
 
-import hasnep.Html exposing [meta, form, label, title, html, div, main, button, h1, h2, script, link, body, header, text, a, input]
-import hasnep.Attribute exposing [attribute, hidden, type, style, id, charset, class, src, rel, href, name, content]
-import ws.Http exposing [Request]
+import platform.Http exposing [Request]
+import template.Html exposing [meta, form, label, title, html, div, main, script, link, body, header, text, input]
+import template.Attribute exposing [attribute, hidden, type, id, charset, class, src, rel, href, name, content]
 
-page! : Request => Html.Node
-page! = |_req|
+dashboard! : Request => Html.Node
+dashboard! = |_req|
     html [(attribute "data-webtui-theme") "dark"] [
         header [] [
             meta [charset "utf-8"],

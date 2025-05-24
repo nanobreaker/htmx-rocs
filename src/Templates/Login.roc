@@ -1,11 +1,37 @@
-module [page!]
+module [login!]
 
-import hasnep.Html exposing [b, p, br, meta, pre, code, head, span, title, html, div, main, form, button, h1, h2, script, link, body, header, text, a]
-import hasnep.Attribute exposing [attribute, method, action, style, id, charset, class, src, rel, href, name, content]
-import ws.Http exposing [Request]
+import platform.Http exposing [Request]
+import template.Html exposing [
+    a,
+    body,
+    br,
+    code,
+    div,
+    head,
+    html,
+    link,
+    main,
+    meta,
+    p,
+    pre,
+    script,
+    text,
+    title,
+]
+import template.Attribute exposing [
+    attribute,
+    charset,
+    class,
+    content,
+    href,
+    name,
+    rel,
+    src,
+    style,
+]
 
-page! : Request => Html.Node
-page! = |_req|
+login! : Request => Html.Node
+login! = |_req|
     html [(attribute "data-webtui-theme") "dark"] [
         head [] [
             meta [charset "utf-8"],

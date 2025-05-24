@@ -1,6 +1,6 @@
 module [save!, find!]
 
-import ws.Sqlite
+import platform.Sqlite
 
 import Models.Todo exposing [Todo]
 
@@ -25,7 +25,7 @@ save! = |todo, db_path, user_id|
             query:
             """
                 INSERT INTO todos (user_id, title, description, start, end)
-                VALUES (${user_id}, ${todo.title}, ${description}, ${start}, ${end}) 
+                VALUES (${user_id}, '${todo.title}', '${description}', '${start}', '${end}') 
             """,
             bindings: [],
             row: Sqlite.u64("count"),

@@ -1,26 +1,16 @@
 module [handle!]
 
-import ws.Http exposing [Request, Response]
-import ws.Url
-import ws.MultipartFormData
-import ws.Stdout
+import platform.Http exposing [Request, Response]
+import platform.MultipartFormData
+import template.Html
 
-import Views.Todo exposing [page]
-import Models.Todo exposing [Todo]
-import Services.Parser exposing [parse, Command, ParserErr]
-import Repositories.TodoRepository exposing [save!, find!]
-import hasnep.Html
+import Templates.Todo
+import Repositories.Todo exposing [save!]
+import Services.Parser exposing [parse, Command]
 
-handle! : Request => Result Response _
-handle! = |req|
-    url_segments =
-        req.uri
-        |> Url.from_str
-        |> Url.path
-        |> Str.split_on "/"
-        |> List.drop_first 1
-
-    when (req.method, url_segments) is
+handle! : Request, List Str => Result Response [ServerErr Str]_
+handle! = |req, url|
+    when (req.method, url) is
         (POST, ["cli"]) ->
             MultipartFormData.parse_form_url_encoded(req.body)
             |> Result.try |form| Dict.get form "command"
@@ -39,7 +29,7 @@ handle_command = |command|
     when command is
         TodoCreate(todo) ->
             save! todo "test.db" "1"
-            |> Result.map_ok |t| page t
+            |> Result.map_ok |t| Templates.Todo.template t
             |> Result.map_ok |html| Html.render html
             |> Result.map_ok |text| Str.to_utf8 text
             |> Result.map_ok |utf8| {

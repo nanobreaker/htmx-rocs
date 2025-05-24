@@ -22,15 +22,6 @@ tokenize = |text|
     List.walk (Str.to_utf8 text) { state: New, tokens: [], acc: [] } update
     |> finalize
 
-## Finalize pending tokens and return list of tokens
-finalize : State -> List Token
-finalize = |state|
-    when state.state is
-        New -> state.tokens
-        Keyword -> List.append state.tokens (Keyword (to_keyword state.acc))
-        Option -> List.append state.tokens (Option (to_option state.acc))
-        Text -> state.tokens
-
 # Inner function to update state of state maching while walking the list
 update : State, U8 -> State
 update = |state, char|
@@ -58,6 +49,15 @@ update = |state, char|
             when to_code char is
                 QuotationMark -> { state: New, tokens: List.append(state.tokens, Text (Str.from_utf8_lossy state.acc)), acc: [] }
                 _ -> { state: Text, tokens: state.tokens, acc: List.append(state.acc, char) }
+
+## Finalize pending tokens and return list of tokens
+finalize : State -> List Token
+finalize = |state|
+    when state.state is
+        New -> state.tokens
+        Keyword -> List.append state.tokens (Keyword (to_keyword state.acc))
+        Option -> List.append state.tokens (Option (to_option state.acc))
+        Text -> state.tokens
 
 # Helper function to determine code based on char
 to_code : U8 -> [Alphanumeric, Whitespace, QuotationMark, Dash, Unknown]
